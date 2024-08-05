@@ -12,5 +12,12 @@ class Borrows extends Model
 
     protected $table = 'borrows';
     protected $fillable = ['load_date', 'barrow_date', 'book_id', 'user_id'];
+    
 
+    public function user(){
+        return $this->belongsTo(User::class, 'user_id');
+    }
+    public function book(){
+        return $this->belongsTo(Books::class, 'book_id');
+    }
 }

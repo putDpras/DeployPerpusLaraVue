@@ -17,7 +17,7 @@ class BorrowsController extends Controller
         $this->middleware(['isOwner'])->only(['index']);
     }
     public function index(){
-        $borrows = Borrows::latest()->get();
+        $borrows = Borrows::with(['user', 'book'])->latest()->get();
         return response()->json([
             'message' => 'Data berhasil ditampilkan',
             'data' => $borrows
@@ -54,13 +54,13 @@ class BorrowsController extends Controller
             ]
         );
 
-        
+        $data = Borrows::with(['user', 'book'])->find($borrow->id);
 
 
         return response()->json([
-            "message" => "Boorows berhasil dibuat/diubah",
+            "message" => "Borows berhasil dibuat/diubah",
             // "user" => $checkReview2
-            "borrow" => $borrow
+            "borrow" => $data
 
         ], 201);
     }

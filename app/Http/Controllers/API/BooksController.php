@@ -4,6 +4,9 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Books;
+use Cloudinary\Api\Upload\UploadApi;
+use Cloudinary\Cloudinary;
+use Cloudinary\Configuration\Configuration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -46,27 +49,46 @@ class BooksController extends Controller
 
         ]);
 
-        if ($validator->fails()){
-            return response()->json($validator->errors(), 422);   
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
         }
 
-        if ($request->hasFile('image')){
-            $imageName = time().'.'.$request->image->extension();
-            $request->image->storeAs('public/images', $imageName);
-            $path = env('APP_URL').'/storage/images/';
-            $request->image = $path.$imageName;
+        if ($request->hasFile('image')) {
+           
+            // $imageName = time() . '.' . $request->image->extension();
+            // $request->image->storeAs('public/images', $imageName);
+            // $path = env('APP_URL') . '/storage/images/';
+            // $request->image = $path . $imageName;
+
+            $imageName = time();
+
+            $configCloudinary = new Configuration();
+            $configCloudinary->cloud->cloudName = 'dsylmdhfs';
+            $configCloudinary->cloud->apiKey = '548496764536754';
+            $configCloudinary->cloud->apiSecret = '715VxjMxModkB9mkE8t89biQ-J0';
+            $configCloudinary->url->secure = true;
+
+            $cloudinary = new Cloudinary($configCloudinary);
+            $result = $cloudinary->uploadApi()->upload($request->file('image')->getRealPath(), [
+                "public_id" => $imageName
+            ]);
         }
 
         $data = new Books;
         $data->title = $request->title;
         $data->summary = $request->summary;
-        $data->image=$request->image;
-        $data->stok=$request->stok;
-        $data->category_id=$request->category_id;
+        $data->image = $result['url'];
+        $data->stok = $request->stok;
+        $data->category_id = $request->category_id;
 
         $data->save();
-        return response()->json(["Message" => "Data berhasil ditambahkan"]
-        , 201);
+        return response()->json(
+            [
+                "Message" => "Data berhasil ditambahkan",
+                // "Result" => $result['url']
+            ],
+            201
+        );
     }
 
     /**
@@ -76,15 +98,15 @@ class BooksController extends Controller
     {
         //
         $book = Books::with(['categories', 'listBorrows'])->find($id);
-        if(!$book){
+        if (!$book) {
             return response()->json([
                 "message" => 'Book tidak ditemukan'
-            ],404);
+            ], 404);
         }
         return response()->json([
             "message" => 'Data Detail ditampilkan',
             'data' => $book
-        ],200);
+        ], 200);
     }
 
     /**
@@ -102,40 +124,65 @@ class BooksController extends Controller
 
         ]);
 
-        if ($validator->fails()){
-            return response()->json($validator->errors(), 422);   
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
         }
 
         $book = Books::find($id);
         if (!$book) {
             return response()->json([
                 "message" => 'Book tidak ditemukan'
-            ],404);
+            ], 404);
         }
 
-        if ($book->image){
+        if ($book->image) {
+            // $imageName = basename($book->image);
+            // Storage::delete('public/images/' . $imageName);
             $imageName = basename($book->image);
-            Storage::delete('public/images/'.$imageName);
+
+            $configCloudinary = new Configuration();
+            $configCloudinary->cloud->cloudName = 'dsylmdhfs';
+            $configCloudinary->cloud->apiKey = '548496764536754';
+            $configCloudinary->cloud->apiSecret = '715VxjMxModkB9mkE8t89biQ-J0';
+            $configCloudinary->url->secure = true;
+
+            $cloudinary = new Cloudinary($configCloudinary);
+            $result = $cloudinary->uploadApi()->destroy($imageName);
         }
 
-        if ($request->hasFile('image')){
-            $imageName = time().'.'.$request->image->extension();
-            $request->image->storeAs('public/images', $imageName);
-            $path = env('APP_URL').'/storage/images/';
-            $request->image = $path.$imageName;
+        if ($request->hasFile('image')) {
+            // $imageName = time() . '.' . $request->image->extension();
+            // $request->image->storeAs('public/images', $imageName);
+            // $path = env('APP_URL') . '/storage/images/';
+            // $request->image = $path . $imageName;
+
+            $imageName = time();
+
+            $configCloudinary = new Configuration();
+            $configCloudinary->cloud->cloudName = 'dsylmdhfs';
+            $configCloudinary->cloud->apiKey = '548496764536754';
+            $configCloudinary->cloud->apiSecret = '715VxjMxModkB9mkE8t89biQ-J0';
+            $configCloudinary->url->secure = true;
+
+            $cloudinary = new Cloudinary($configCloudinary);
+            $result = $cloudinary->uploadApi()->upload($request->file('image')->getRealPath(), [
+                "public_id" => $imageName
+            ]);
         }
 
-        
+
         $book->title = $request->title;
         $book->summary = $request->summary;
-        $book->image=$request->image;
-        $book->stok=$request->stok;
-        $book->category_id=$request->category_id;
+        $book->image = $result['url'];
+        $book->stok = $request->stok;
+        $book->category_id = $request->category_id;
 
         $book->update();
 
-        return response()->json(["Message" => "Data berhasil diupdate"]
-        , 201);
+        return response()->json(
+            ["Message" => "Data berhasil diupdate"],
+            201
+        );
     }
 
     /**
@@ -145,20 +192,30 @@ class BooksController extends Controller
     {
         //
         $book = Books::find($id);
-        if(!$book){
+        if (!$book) {
             return response()->json([
                 "message" => 'Book tidak ditemukan'
-            ],404);
+            ], 404);
         }
 
-        if($book->image){
+        if ($book->image) {
+            // $imageName = basename($book->image);
+            // Storage::delete('public/images/' . $imageName);
             $imageName = basename($book->image);
-            Storage::delete('public/images/'.$imageName);
+
+            $configCloudinary = new Configuration();
+            $configCloudinary->cloud->cloudName = 'dsylmdhfs';
+            $configCloudinary->cloud->apiKey = '548496764536754';
+            $configCloudinary->cloud->apiSecret = '715VxjMxModkB9mkE8t89biQ-J0';
+            $configCloudinary->url->secure = true;
+
+            $cloudinary = new Cloudinary($configCloudinary);
+            $result = $cloudinary->uploadApi()->destroy($imageName);
         }
 
         $book->delete();
         return response()->json([
             "message" => 'Data berhasil dihapus'
-        ],200);
+        ], 200);
     }
 }
