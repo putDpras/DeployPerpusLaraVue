@@ -77,7 +77,7 @@ class BooksController extends Controller
         $data = new Books;
         $data->title = $request->title;
         $data->summary = $request->summary;
-        $data->image = $result['url'];
+        $data->image = $result['secure_url'];
         $data->stok = $request->stok;
         $data->category_id = $request->category_id;
 
@@ -85,7 +85,7 @@ class BooksController extends Controller
         return response()->json(
             [
                 "Message" => "Data berhasil ditambahkan",
-                // "Result" => $result['url']
+                "Result" => basename($result['url'])
             ],
             201
         );
@@ -138,7 +138,7 @@ class BooksController extends Controller
         if ($book->image) {
             // $imageName = basename($book->image);
             // Storage::delete('public/images/' . $imageName);
-            $imageName = basename($book->image);
+            $imageName = pathinfo($book->image, PATHINFO_FILENAME);
 
             $configCloudinary = new Configuration();
             $configCloudinary->cloud->cloudName = 'dsylmdhfs';
@@ -173,7 +173,7 @@ class BooksController extends Controller
 
         $book->title = $request->title;
         $book->summary = $request->summary;
-        $book->image = $result['url'];
+        $book->image = $result['secure_url'];
         $book->stok = $request->stok;
         $book->category_id = $request->category_id;
 
@@ -201,7 +201,7 @@ class BooksController extends Controller
         if ($book->image) {
             // $imageName = basename($book->image);
             // Storage::delete('public/images/' . $imageName);
-            $imageName = basename($book->image);
+            $imageName = pathinfo($book->image, PATHINFO_FILENAME);
 
             $configCloudinary = new Configuration();
             $configCloudinary->cloud->cloudName = 'dsylmdhfs';
